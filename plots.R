@@ -28,10 +28,13 @@ plot_coin_flip<-function(n_flip=10,grid_size=1e5,p=0.7,S=2,L=1.5){
 	p_grid<-seq(from=0,to=1,length.out=grid_size)
 	if(n_flip==0){
 		likelihood<-rep(1,grid_size)
+		MLE<-NA
 	}else{
 		likelihood<-dbinom(x=sum(flips),size=n_flip,prob=p_grid)
+		MLE<-p_grid[which.max(likelihood)]
+		MLE<-round(MLE,digits=2)
 	}
-
+	
 	plot(p_grid
 	     ,likelihood
 	     ,type="l"
@@ -42,6 +45,7 @@ plot_coin_flip<-function(n_flip=10,grid_size=1e5,p=0.7,S=2,L=1.5){
 	     ,font.lab=2
 	     ,font.axis=2)
 	mtext(side=2,text="likelihood",cex=S,line=L,font=2)
-	mtext(side=3,text=paste("H:",sum(flips)," T:",n_flip-sum(flips)),cex=S,line=L,font=2)
+	mtext(side=3,text=paste("Flips:",n_flip," H:",sum(flips)," T:",n_flip-sum(flips)),cex=S,line=L,font=2)
+	legend("topright",legend=paste("MLE:",MLE),bty="n",cex=S,text.font=2)
 
 }
