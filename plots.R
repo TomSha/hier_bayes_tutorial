@@ -1,4 +1,5 @@
 library(fitdistrplus)
+library(bayestestR)
 
 plot_norm<-function(plot_dens=T,n=500,mu=100,sig=1.5,S=1.5,L=2.5){
 	set.seed(260390)
@@ -22,8 +23,7 @@ plot_norm<-function(plot_dens=T,n=500,mu=100,sig=1.5,S=1.5,L=2.5){
 
 plot_coin_flip<-function(n_flip=10,grid_size=1e5,p=0.7,S=2,L=1.5){
 	set.seed(42)
-	flips<-rep(NA,n_flip)
-	for(i in 1:n_flip) flips[i]<-rbinom(n=1,size=1,prob=p)
+	flips<-rbinom(n=n_flip,size=1,prob=p)
 
 	p_grid<-seq(from=0,to=1,length.out=grid_size)
 	if(n_flip==0){
@@ -55,16 +55,19 @@ plot_coin_flip_prior<-function(n_flip=50,a=1,b=1,grid_size=1e5,p=0.7,S=2,L=1.5){
 
 	par(mfrow=c(1,3))
 
-	flips<-rep(NA,n_flip)
-	for(i in 1:n_flip) flips[i]<-rbinom(n=1,size=1,prob=p)
+	flips<-rbinom(n=n_flip,size=1,prob=p)
 
 	p_grid<-seq(from=0,to=1,length.out=grid_size)
 	likelihood<-dbinom(x=sum(flips),size=n_flip,prob=p_grid)
+	MLE<-p_grid[which.max(likelihood)]
+	MLE<-round(MLE,digits=2)
 
 	prior<-dbeta(x=p_grid,shape1=a,shape2=b)
 
 	posterior<-likelihood*prior
 	posterior<-posterior/sum(posterior)
+	MAP<-p_grid[which.max(posterior)]
+	MAP<-round(MAP,digits=2)
 
 	plot(p_grid
 	     ,prior
@@ -73,6 +76,7 @@ plot_coin_flip_prior<-function(n_flip=50,a=1,b=1,grid_size=1e5,p=0.7,S=2,L=1.5){
 	     ,ylab=""
 	     ,yaxt="n"
 	     ,cex.lab=S
+	     ,cex.axis=S
 	     ,font.lab=2
 	     ,font.axis=2)
 	mtext(side=2,text="prior",cex=S,line=L,font=2)
@@ -84,9 +88,12 @@ plot_coin_flip_prior<-function(n_flip=50,a=1,b=1,grid_size=1e5,p=0.7,S=2,L=1.5){
 	     ,ylab=""
 	     ,yaxt="n"
 	     ,cex.lab=S
+	     ,cex.axis=S
 	     ,font.lab=2
 	     ,font.axis=2)
 	mtext(side=2,text="likelihood",cex=S,line=L,font=2)
+	mtext(side=3,text=paste("Flips:",n_flip),cex=S,line=L,font=2)
+	legend("topright",legend=paste("MLE:",MLE),bty="n",cex=S,text.font=2)
 
 	plot(p_grid
 	     ,posterior
@@ -95,7 +102,56 @@ plot_coin_flip_prior<-function(n_flip=50,a=1,b=1,grid_size=1e5,p=0.7,S=2,L=1.5){
 	     ,ylab=""
 	     ,yaxt="n"
 	     ,cex.lab=S
+	     ,cex.axis=S
 	     ,font.lab=2
 	     ,font.axis=2)
 	mtext(side=2,text="posterior",cex=S,line=L,font=2)
+	legend("topright",legend=paste("MAP:",MAP),bty="n",cex=S,text.font=2)
 }
+
+
+
+plot_coin_flip_CI<-function(n_flip=10,grid_size=1e5,CI_bound=0.89,p=0.7,S=2,L=1.5){
+	set.seed(42)
+	flips<-rbinom(n=n_flip,size=1,prob=p)
+
+	p_grid<-seq(from=0,to=1,length.out=grid_size)
+	likelihood<-dbinom(x=sum(flips),size=n_flip,prob=p_grid)
+	likelihood<-likelihood/sum(likelihood)
+
+	MLE<-p_grid[which.max(likelihood)]
+	MLE<-round(MLE,digits=2)
+
+	c_likelihood<-cumsum(likelihood)/sum(likelihood)
+	
+	upper_CI_ind<-(which(c_likelihood>=(1-CI_bound)/2))[1]
+	lower_CI_ind<-(which(c_likelihood>=1-(1-CI_bound)/2))[1]-1
+
+	lower_CI<-p_grid[lower_CI_ind]
+	upper_CI<-p_grid[upper_CI_ind]
+
+	
+	plot(p_grid
+	     ,likelihood
+	     ,type="l"
+	     ,xlab="probability of H (p)"
+	     ,ylab=""
+	     ,yaxt="n"
+	     ,cex.lab=S
+	     ,font.lab=2
+	     ,font.axis=2)
+
+	#shade AUC corresponding to CI
+	upper_lim<-likelihood[lower_CI_ind:upper_CI_ind]
+	lower_lim<-rep(0,length(upper_lim))
+	x_cord<-p_grid[lower_CI_ind:upper_CI_ind]
+
+	polygon(c(x_cord,rev(x_cord)),c(upper_lim,rev(lower_lim)),border=F,col="red")
+
+	mtext(side=2,text="posterior",cex=S,line=L,font=2)
+	mtext(side=3,text=paste("Flips:",n_flip," H:",sum(flips)," T:",n_flip-sum(flips)),cex=S,line=L,font=2)
+	legend("topright",legend=paste("MAP:",MLE),bty="n",cex=S,text.font=2)
+
+
+}
+
