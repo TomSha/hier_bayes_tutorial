@@ -1,23 +1,130 @@
 library(fitdistrplus)
 library(bayestestR)
+source("martincolourscale.R")
 
 plot_norm<-function(plot_dens=T,n=500,mu=100,sig=1.5,S=1.5,L=2.5){
 	set.seed(260390)
 	dat<-rnorm(n,mu,sig)
-	h<-hist(dat,ann=F,main="",font.axis=2,col="red",ylim=c(0,50),breaks=50)
+	h<-hist(dat,ann=F,main="",font.axis=2,col=martincolourscale[1],ylim=c(0,50),breaks=50,yaxt="n")
+	Axis(side=2, labels=F)
 	mtext(text="Fluorescence level (AU)",side=1,line=L,cex=S,font=2)
-	mtext(text="Counts",side=2,line=L,cex=S,font=2)
 
 	if(plot_dens){
 		params<-fitdist(data=dat,method="mle",dist="norm")
 		xfit<-seq(min(dat)-1,max(dat)+1,length=1000)
 		yfit<-dnorm(xfit,params$estimate[1],params$estimate[2])
 		yfit<-yfit*diff(h$mids[1:2]*length(dat))
-		lines(xfit,yfit,col="blue",lwd=3)
+		lines(xfit,yfit,col=martincolourscale[3],lwd=3)
+		mtext(text="PDF",side=2,line=L,cex=S,font=2)
+
+	}else{
+		mtext(text="Counts",side=2,line=L,cex=S,font=2)
 	}
 }
 
+plot_norm_dens<-function(S=2){
+	par(mar=c(1,5,1,1))
+	gridd<-seq(from=1,to=100,length.out=2000)
+	plot(x=gridd
+		,ylim=c(0,0.45)
+		,col="white"
+		,xaxt="n"
+	 	,xlab=""
+	     	,ylab="PDF"
+		,cex=S
+		,font.axis=2
+	    	,font.lab=2
+		,cex.axis=S
+		,cex.lab=S)
+	sig<-c(1,5,10)
+	mu<-c(75,20,50)
+	for(i in 1:3){
+		points(dnorm(gridd,mean=mu[i],sd=sig[i]),col=martincolourscale[i],type="l",lwd=3)
+	}
+	legend("topright",legend="Normal(μ,σ)",bty="n",cex=S,text.font=2)
+}
 
+
+plot_binom_dens<-function(S=2,S_pnt=1.5){
+	par(mar=c(1,5,1,1))
+	gridd<-seq(from=1,to=100,length.out=100)
+	plot(x=gridd
+		,ylim=c(0,0.2)
+		,col="white"
+		,xaxt="n"
+	 	,xlab=""
+	     	,ylab="PMF"
+		,cex=S
+		,font.axis=2
+	    	,font.lab=2
+		,cex.axis=S
+		,cex.lab=S)
+	n=c(40,40,80)
+	p=c(0.5,0.7,0.8)
+	for(i in 1:3){
+		dens<-dbinom(gridd,size=n[i],prob=p[i])
+		points(dens,col=martincolourscale[i],type="p",cex=S_pnt,pch=19)
+	}
+	legend("topright",legend="Binomial(n,p)",bty="n",cex=S,text.font=2)
+}
+
+plot_beta_dens<-function(S=2){
+	par(mar=c(1,5,1,1))
+	gridd<-seq(from=0,to=1,length.out=2000)
+	plot(x=gridd
+		,ylim=c(0,1.8)
+		,col="white"
+		,xaxt="n"
+	 	,xlab=""
+	     	,ylab="PDF"
+		,cex=S
+		,font.axis=2
+	    	,font.lab=2
+		,cex.axis=S
+		,cex.lab=S)
+	Alpha<-c(0.1,1,3)
+	Beta<-c(0.1,1,2)
+	for(i in 1:3){
+		points(dbeta(gridd,shape1=Alpha[i],shape2=Beta[i]),col=martincolourscale[i],type="l",lwd=3)
+	}
+	legend("topright",legend="Beta(α,β)",bty="n",cex=S,text.font=2)
+}
+
+plot_binom<-function(S=2,S_pnt=1.5){
+	par(mar=c(5,5,1,1))
+	gridd<-seq(from=0,to=10,length.out=11)	
+	plot(x=gridd,
+	     	,y=dbinom(gridd,size=10,prob=0.7)
+		,cex=S_pnt
+		,cex.axis=S
+		,cex.lab=S
+		,font.axis=2
+		,font.lab=2
+		,xlab="Number of heads"
+		,ylab="PMF"
+		,col=martincolourscale[1]
+		,pch=19)
+	legend("topleft",inset=c(-0.1,0),legend="Binomial(n = 10,p = 0.7)",bty="n",cex=S,text.font=2)
+}
+
+plot_binom_sample<-function(trials=20,S=2,S_pnt=1.5){
+	par(mar=c(5,5,1,1))
+	gridd<-seq(from=0,to=10,length.out=11)	
+	samples<-rbinom(n=trials,size=10,prob=0.7)
+	samples<-table(factor(samples,levels=0:10))
+	plot(x=gridd,
+	     	,y=samples
+		,cex=S_pnt
+		,cex.axis=S
+		,cex.lab=S
+		,font.axis=2
+		,font.lab=2
+		,xlab="Number of heads"
+		,ylab="PMF"
+		,col=martincolourscale[1]
+		,pch=19)
+	legend("topleft",inset=c(-0.1,0),legend="Binomial(n = 10,p = 0.7)",bty="n",cex=S,text.font=2)
+}
 
 
 
