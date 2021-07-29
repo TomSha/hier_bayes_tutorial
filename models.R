@@ -26,7 +26,8 @@ model2="model {
 }"
 
 set.seed(27)
-Ntot=c(10,25,75,100)
+Ntot=c(10,100,100,100)
+#Ntot=c(10000,10000,10000,10000)
 #p<-c(0.7,0.4,0.5,0.8)
 p<-c(0.7,0.7,0.7,0.7)
 n<-rep(NA,4)
@@ -68,6 +69,8 @@ plot_post<-function(draw=draw2,S=2){
 	     ,ylab="p"
 	     ,cex.lab=S
 	     ,cex.axis=S
+	     ,font.axis=2
+	     ,font.lab=2
 	     ,main="n samples")	
 	mtext(text=Ntot,at=1:4,side=3,cex=S,font=2)
 
@@ -76,6 +79,8 @@ plot_post<-function(draw=draw2,S=2){
 	l_ci<-sapply(ci_hdi,"[[",2)
 	u_ci<-sapply(ci_hdi,"[[",3)
 
+
+
 	points(MAP
 	       ,col=rgb(1,0,0,0.5)
 	       ,pch=17
@@ -83,10 +88,36 @@ plot_post<-function(draw=draw2,S=2){
 
 	segments(x0=1:4,y0=l_ci,y1=u_ci,lwd=2)
 
-	leg_text<-c("empirical","inferred")
+	leg_text<-c("empirical","MAP")
 	cols<-c(rgb(0,0,1,0.5),rgb(1,0,0,0.5))
 	legend("bottomright",legend=leg_text,bty="n",fill=cols,cex=S,text.font=2)
 }
+
+plot_prior_est<-function(draw=draw2,S=2){
+
+	Alpha<-map_estimate(draw$alpha[1,,1])
+	Beta<-map_estimate(draw$beta[1,,1])
+	Alpha_ci<-ci(draw$alpha[1,,1],method="HDI")
+	Beta_ci<-ci(draw$beta[1,,1],methpds="HDI")
+
+	par(mar=c(5,5,5,3))
+	plot(c(Alpha,Beta)
+	     ,ylim=c(0,5000)
+	     ,pch=19
+	     ,col=rgb(0,0,1,0.5)
+	     ,cex=S
+	     ,xaxt="n"
+	     ,xlab=""
+	     ,ylab="estimated value"
+	     ,cex.lab=S
+	     ,cex.axis=S
+	     ,font.axis=2
+	     ,font.lab=2
+	     ,main="")	
+	mtext(text=c("alpha","beta"),at=1:2,side=1,cex=S,font=2,line=1.5)
+	segments(x0=1:2,y0=c(Alpha_ci[[2]],Beta_ci[[2]]),y1=c(Alpha_ci[[3]],Beta_ci[[3]]),lwd=2)
+}
+
 	
 plot_prior<-function(draw=draw2,S=2){
 	par(mar=c(5,5,5,3))
@@ -96,6 +127,7 @@ plot_prior<-function(draw=draw2,S=2){
 	dens<-dbeta(p_grid,shape1=Alpha,shape2=Beta)
 	MAP<-p_grid[which.max(dens)]
 	plot(p_grid
+	     ,dens
 	     ,type="l"
 	     ,yaxt="n"
              ,ylab="Prior"
@@ -106,8 +138,9 @@ plot_prior<-function(draw=draw2,S=2){
 	     ,cex.axis=S)
 }
 
-plot_stuff<-function(){
-	par(mfrow=c(1,2))
-	plot_post()
-	plot_prior()
+plot_stuff<-function(S=2.5){
+	par(mfrow=c(1,3))
+	plot_post(S=S)
+	plot_prior_est(S=S)
+	plot_prior(S=S)
 }

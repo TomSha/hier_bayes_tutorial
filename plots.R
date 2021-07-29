@@ -92,38 +92,43 @@ plot_beta_dens<-function(S=2){
 
 plot_binom<-function(S=2,S_pnt=1.5){
 	par(mar=c(5,5,1,1))
-	gridd<-seq(from=0,to=10,length.out=11)	
-	plot(x=gridd,
-	     	,y=dbinom(gridd,size=10,prob=0.7)
+	gridd<-seq(from=0,to=1,length.out=2)	
+	cent<-barplot(height=dbinom(gridd,size=1,prob=0.7)
 		,cex=S_pnt
 		,cex.axis=S
 		,cex.lab=S
 		,font.axis=2
 		,font.lab=2
-		,xlab="Number of heads"
+		,xlab=""
 		,ylab="PMF"
 		,col=martincolourscale[1]
-		,pch=19)
-	legend("topleft",inset=c(-0.1,0),legend="Binomial(n = 10,p = 0.7)",bty="n",cex=S,text.font=2)
+		,pch=19
+		,ylim=c(0,1))
+	legend("topleft",inset=c(-0.1,0),legend="Binomial(n = 1,p = 0.7)",bty="n",cex=S,text.font=2)
+	axis(side=1,at=cent,labels=c("Tails","Heads"),line=1.5,cex.axis=S,font.axis=2)
 }
 
 plot_binom_sample<-function(trials=20,S=2,S_pnt=1.5){
+	set.seed(3)
 	par(mar=c(5,5,1,1))
-	gridd<-seq(from=0,to=10,length.out=11)	
-	samples<-rbinom(n=trials,size=10,prob=0.7)
-	samples<-table(factor(samples,levels=0:10))
-	plot(x=gridd,
-	     	,y=samples
+	samples<-rbinom(n=trials,size=1,prob=0.7)
+	samples<-table(factor(samples,levels=0:1))
+	ylims<-max(samples)*1.2
+	cent<-barplot(height=samples
 		,cex=S_pnt
 		,cex.axis=S
 		,cex.lab=S
 		,font.axis=2
 		,font.lab=2
-		,xlab="Number of heads"
-		,ylab="PMF"
+		,xlab=""
+		,xaxt="n"
+		,ylab="Number of Heads and Tails"
 		,col=martincolourscale[1]
-		,pch=19)
-	legend("topleft",inset=c(-0.1,0),legend="Binomial(n = 10,p = 0.7)",bty="n",cex=S,text.font=2)
+		,pch=19
+		,ylim=c(0,ylims))
+	legend("topleft",inset=c(-0.1,0),legend=paste("Binomial(n = ",trials,",p = 0.7)"),bty="n",cex=S,text.font=2)
+	legend("topleft",inset=c(-0.1,0.1),legend=paste("emp p= ",round(samples[2]/trials,digits=2)),bty="n",cex=S,text.font=2)
+	axis(side=1,at=cent,labels=c("Tails","Heads"),line=1.5,cex.axis=S,font.axis=2)
 }
 
 
